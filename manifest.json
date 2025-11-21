@@ -1,0 +1,16 @@
+{
+  "name": "Pontos de Coleta",
+  "short_name": "Coleta",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b6f6f",
+  "description": "Centralize pontos de coleta de doações",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDQiIGhlaWdodD0iMjA0IiB2aWV3Qm94PSIwIDAgMjA0IDIwNCI+PHJlY3Qgd2lkdGg9IjIwNCIgaGVpZ2h0PSIyMDQiIGZpbGw9IiMwYjZmNmYiIHJ4PSI0MCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjM1ZW0iIGZvbnQtc2l6ZT0iNzYiIGZvbnQtc2VyaWZpPSJBcmlhbCwgc2Fucy1zZXJpZiIgZmlsbD0iI2ZmZiI+Q08KPC90ZXh0Pjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
