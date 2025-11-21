@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b6f6f" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>Pontos de Coleta</title>
+  <style>
+    :root{
+      --bg:#fafafa; --card:#ffffff; --accent:#0b6f6f; --muted:#666;
+      --radius:12px; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%; margin:0; background:var(--bg); color:#111}
+    .app{max-width:720px; margin:18px auto; padding:18px;}
+    header{display:flex; align-items:center; gap:12px}
+    .logo{width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,#0b6f6f,#56b3b3); display:flex; align-items:center; justify-content:center; color:white; font-weight:700}
+    h1{font-size:1.25rem; margin:0}
+    p.lead{color:var(--muted); margin:6px 0 18px; font-size:.95rem}
+    .card{background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(12,12,12,0.06); margin-bottom:12px}
+    .list{display:flex; flex-direction:column; gap:8px}
+    .place{display:flex; justify-content:space-between; align-items:center; gap:12px}
+    .meta{font-size:.92rem}
+    .muted{color:var(--muted); font-size:.9rem}
+    form{display:grid; gap:8px}
+    input, button, textarea{font:inherit; padding:10px; border-radius:10px; border:1px solid #e6e6e6}
+    button{background:var(--accent); color:white; border:none; padding:10px 12px; cursor:pointer; border-radius:10px}
+    footer{font-size:.82rem; color:var(--muted); text-align:center; margin-top:12px}
+    @media(min-width:700px){ .app{padding:28px} }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">PC</div>
+      <div>
+        <h1>Pontos de Coleta</h1>
+        <p class="lead">Centralize e cadastre locais de coleta de doações.</p>
+      </div>
+    </header>
+
+    <section class="card" id="main">
+      <h2 style="margin:0 0 8px 0">Locais cadastrados</h2>
+      <div class="list" id="places"></div>
+    </section>
+
+    <section class="card" id="form-card">
+      <h2 style="margin:0 0 8px 0">Cadastrar novo ponto</h2>
+      <form id="addForm">
+        <input id="name" placeholder="Nome do ponto (ex: Associação X)" required />
+        <input id="address" placeholder="Endereço (ex: Rua, número, bairro, cidade)" required />
+        <textarea id="notes" rows="2" placeholder="Observações (horário de funcionamento, tipos de doação)"></textarea>
+        <div style="display:flex; gap:8px;">
+          <button type="submit">Salvar</button>
+          <button type="button" id="clearBtn" style="background:#e6e6e6;color:#111">Limpar</button>
+        </div>
+      </form>
+      <p class="muted" style="margin-top:8px">Os pontos ficam armazenados localmente no seu dispositivo (localStorage).</p>
+    </section>
+
+    <footer>
+      <small>Prototipo PWA • Abra no Safari (iPhone) e escolha "Adicionar à Tela de Início" para instalar.</small>
+    </footer>
+  </div>
+
+  <script>
+    // Primeiro ponto inicial
+    const DEFAULT_PLACES = [
+      {
+        id: 'p1',
+        name: 'Ponto de Coleta - Rua Lisboa 85',
+        address: 'Rua Lisboa 85, Oswaldo Cruz, SCS',
+        notes: 'Recebe roupas e alimentos não perecíveis - Segunda a Sexta 9h-17h'
+      }
+    ];
+
+    // Gerenciamento simples usando localStorage
+    const storageKey = 'pontos_coleta_v1';
+    function loadPlaces(){
+      try{
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : DEFAULT_PLACES;
+      }catch(e){ return DEFAULT_PLACES; }
+    }
+    function savePlaces(arr){ localStorage.setItem(storageKey, JSON.stringify(arr)); }
+
+    // Render
+    const placesEl = document.getElementById('places');
+    function render(){
+      const places = loadPlaces();
+      placesEl.innerHTML = '';
+      places.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'card place';
+        el.innerHTML = `<div>
+          <div style="font-weight:600">${escapeHtml(p.name)}</div>
+          <div class="meta muted">${escapeHtml(p.address)}</div>
+          <div class="muted" style="margin-top:6px">${escapeHtml(p.notes || '')}</div>
+        </div>
+        <div style="min-width:92px; text-align:right">
+          <button data-id="${p.id}" class="removeBtn" style="background:#fff;border:1px solid #eee;color:#c33;padding:8px;border-radius:8px">Remover</button>
+        </div>`;
+        placesEl.appendChild(el);
+      });
+      // attach remove handlers
+      document.querySelectorAll('.removeBtn').forEach(b=>{
+        b.addEventListener('click', e=>{
+          const id = e.currentTarget.getAttribute('data-id');
+          const arr = loadPlaces().filter(x=>x.id !== id);
+          savePlaces(arr); render();
+        });
+      });
+    }
+
+    // form
+    const form = document.getElementById('addForm');
+    form.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+      if(!name||!address) return alert('Preencha nome e endereço.');
+      const arr = loadPlaces();
+      arr.unshift({ id: 'p'+Date.now(), name, address, notes });
+      savePlaces(arr);
+      form.reset();
+      render();
+    });
+    document.getElementById('clearBtn').addEventListener('click', ()=>form.reset());
+
+    // helper
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+    // register service worker (se houver)
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('/service-worker.js').catch(e=>{
+        console.warn('SW register failed:', e);
+      });
+    }
+
+    // inicializa UI
+    render();
+  </script>
+</body>
+</html>
